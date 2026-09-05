@@ -118,11 +118,17 @@ async def get_file(filename: str, name: str = "video.mp4"):
     )
 
 if __name__ == "__main__":
+    import sys
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+        
     port = int(os.environ.get("PORT", 8000))
     local_ip = get_local_ip()
     print("=" * 60)
-    print("🌸 NİSA HANIMA ÖZEL VİDEO İNDİRİCİ BAŞLATILDI 🌸")
-    print(f"👉 Bilgisayardan erişim: http://localhost:{port}")
-    print(f"👉 Telefonda aynı Wi-Fi üzerinden erişim: http://{local_ip}:{port}")
+    print("NISA HANIMA OZEL VIDEO INDIRICI BASLATILDI (MelDownloader)")
+    print(f"Bilgisayardan erisim: http://localhost:{port}")
+    print(f"Telefonda ayni Wi-Fi uzerinden erisim: http://{local_ip}:{port}")
     print("=" * 60)
     uvicorn.run(app, host="0.0.0.0", port=port)

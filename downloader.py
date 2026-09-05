@@ -4,6 +4,7 @@ import glob
 import time
 import shutil
 import logging
+import subprocess
 from typing import Dict, Any, Optional
 import yt_dlp
 import imageio_ffmpeg
@@ -11,15 +12,15 @@ import imageio_ffmpeg
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# FFmpeg yolunu imageio-ffmpeg üzerinden dinamik olarak alalım
 FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
-logger.info(f"FFmpeg binary bulundu: {FFMPEG_PATH}")
+logger.info(f"FFmpeg binary: {FFMPEG_PATH}")
 
-DOWNLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloads")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 def cleanup_old_downloads(max_age_seconds: int = 1800):
-    """30 dakikadan eski geçici dosyaları temizler."""
+    """30 dakikadan eski geçici ve indirilmiş dosyaları temizler."""
     try:
         current_time = time.time()
         for filename in os.listdir(DOWNLOAD_DIR):
@@ -47,7 +48,7 @@ def detect_platform(url: str) -> str:
     return "auto"
 
 def get_base_ydl_opts() -> Dict[str, Any]:
-    """Temel yt-dlp seçenekleri."""
+    """Temel yt-dlp seçenekleri - format kısıtlaması olmadan."""
     return {
         "ffmpeg_location": FFMPEG_PATH,
         "quiet": True,
@@ -64,9 +65,7 @@ def get_base_ydl_opts() -> Dict[str, Any]:
     }
 
 def fetch_media_info(url: str) -> Dict[str, Any]:
-    """
-    Video/Medya bilgilerini çeker: başlık, kapak resmi, süre, kanal adı vb.
-    """
+    """Video önizleme ve meta verilerini çeker."""
     opts = get_base_ydl_opts()
     opts["noplaylist"] = True
     
@@ -77,7 +76,7 @@ def fetch_media_info(url: str) -> Dict[str, Any]:
             err_msg = str(e)
             logger.error(f"Bilgi çekme hatası: {err_msg}")
             if "Private video" in err_msg or "login" in err_msg.lower():
-                raise RuntimeError("Bu içerik gizli/özel bir hesapta olduğu için erişilemiyor.")
+                raise RuntimeError("Bu içerik gizli veya kısıtlı bir hesapta olduğu için erişilemiyor.")
             elif "Video unavailable" in err_msg:
                 raise RuntimeError("Video yayından kaldırılmış veya bağlantı geçersiz.")
             else:
@@ -86,7 +85,6 @@ def fetch_media_info(url: str) -> Dict[str, Any]:
     if not info:
         raise RuntimeError("Video detayları tespit edilemedi.")
 
-    # Süre biçimlendirme
     duration_secs = info.get("duration")
     if duration_secs:
         mins, secs = divmod(int(duration_secs), 60)
@@ -98,12 +96,10 @@ def fetch_media_info(url: str) -> Dict[str, Any]:
     else:
         duration_str = "Kısa Video / Belirsiz"
 
-    # En iyi kapak görselini bulma
     thumbnail = info.get("thumbnail")
     if not thumbnail and info.get("thumbnails"):
         thumbnail = info["thumbnails"][-1].get("url")
 
-    # Çözünürlük ve kalite tespiti
     resolution = "En Yüksek Kalite (Orijinal)"
     if info.get("resolution"):
         resolution = info["resolution"]
@@ -121,75 +117,131 @@ def fetch_media_info(url: str) -> Dict[str, Any]:
         "original_url": url,
     }
 
-def download_media(url: str, target_device: str = "ios") -> Dict[str, Any]:
+def convert_to_target_format(input_path: str, output_path: str, target_device: str):
     """
-    Medyayı belirtilen cihaz profiline göre en yüksek kalitede indirir.
+    İndirilen ham videoyu FFmpeg ile seçilen cihaz profiline dönüştürür.
     
-    Cihaz Profilleri:
-    - 'ios': iPhone/iPad ile %100 uyumlu MP4 (H.264 video + AAC ses).
-             iOS Fotoğraflar uygulaması ve Safari'de doğrudan oynatılabilir.
-    - 'android': Android cihazlar için yüksek uyumlu MP4.
-    - 'pc': Kayıpsız orijinal en yüksek kalite (4K/1080p, en iyi video + en iyi ses).
-    - 'audio': Sadece MP3 (320kbps kristal netliğinde ses).
+    - 'ios': iPhone/iPad için Apple Photos & Safari ile %100 uyumlu H.264 + AAC + yuv420p MP4.
+    - 'android': Android galerileriyle uyumlu yüksek kalite MP4.
+    - 'pc': Kayıpsız orijinal en yüksek kalite MP4.
+    - 'audio': 320kbps kristal netliğinde MP3 ses dosyası.
     """
-    cleanup_old_downloads()
-    
-    timestamp = int(time.time() * 1000)
-    out_template = os.path.join(DOWNLOAD_DIR, f"{timestamp}_%(title).50s.%(ext)s")
-
-    opts = get_base_ydl_opts()
-    opts["outtmpl"] = out_template
-    opts["noplaylist"] = True
+    logger.info(f"Dönüştürme başlatıldı: {input_path} -> {output_path} ({target_device})")
 
     if target_device == "audio":
-        opts.update({
-            "format": "bestaudio/best",
-            "postprocessors": [{
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": "mp3",
-                "preferredquality": "320",
-            }],
-        })
+        cmd = [
+            FFMPEG_PATH, "-y",
+            "-i", input_path,
+            "-vn",
+            "-acodec", "libmp3lame",
+            "-b:a", "320k",
+            output_path
+        ]
     elif target_device == "ios":
-        # iOS Fotoğraflar / Safari için H.264 ve AAC uyumu
-        opts.update({
-            "format": "bestvideo[vcodec^=avc1]+bestaudio[acodec^=mp4a]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
-            "merge_output_format": "mp4",
-            "postprocessors": [{
-                "key": "FFmpegVideoRemuxer",
-                "preferedformat": "mp4",
-            }],
-        })
+        # Apple cihazları için katı H.264 Baseline/High + AAC + yuv420p kuralı
+        cmd = [
+            FFMPEG_PATH, "-y",
+            "-i", input_path,
+            "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            "-preset", "fast",
+            "-crf", "18",  # Görsel olarak kayıpsız en yüksek kalite
+            "-c:a", "aac",
+            "-b:a", "192k",
+            "-movflags", "+faststart",
+            output_path
+        ]
     elif target_device == "android":
-        opts.update({
-            "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
-            "merge_output_format": "mp4",
-        })
-    else:  # PC / Universal
-        opts.update({
-            "format": "bestvideo+bestaudio/best",
-            "merge_output_format": "mp4",
-        })
+        cmd = [
+            FFMPEG_PATH, "-y",
+            "-i", input_path,
+            "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            "-preset", "fast",
+            "-crf", "18",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            "-movflags", "+faststart",
+            output_path
+        ]
+    else:  # PC / Orijinal
+        cmd = [
+            FFMPEG_PATH, "-y",
+            "-i", input_path,
+            "-c", "copy",
+            "-movflags", "+faststart",
+            output_path
+        ]
+
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    if proc.returncode != 0:
+        logger.warning(f"FFmpeg özel dönüştürme başarısız oldu, genel dönüştürme deneniyor: {proc.stderr[:200]}")
+        # Yedek dönüştürme komutu (fail-safe)
+        fallback_cmd = [
+            FFMPEG_PATH, "-y",
+            "-i", input_path,
+            output_path
+        ]
+        fallback_proc = subprocess.run(fallback_cmd, capture_output=True, text=True)
+        if fallback_proc.returncode != 0:
+            raise RuntimeError(f"FFmpeg dönüştürme hatası: {proc.stderr}")
+
+def download_media(url: str, target_device: str = "ios") -> Dict[str, Any]:
+    """
+    2 AŞAMALI İNDİRME VE DÖNÜŞTÜRME MOTORU:
+    1. Aşama: Orijinal video hangi platformda hangi formattaysa hiçbir kısıtlama olmadan indirilir.
+    2. Aşama: İndirilen dosya FFmpeg ile seçilen cihazın (iPhone, Android, PC vb.) formatına dönüştürülür.
+    """
+    cleanup_old_downloads()
+
+    timestamp = int(time.time() * 1000)
+    raw_template = os.path.join(DOWNLOAD_DIR, f"raw_{timestamp}_%(id)s.%(ext)s")
+
+    # 1. AŞAMA: Orijinali neyse en yüksek kalitede çek
+    opts = get_base_ydl_opts()
+    opts["outtmpl"] = raw_template
+    opts["noplaylist"] = True
+    opts["format"] = "bestvideo+bestaudio/best"
 
     with yt_dlp.YoutubeDL(opts) as ydl:
         try:
             info = ydl.extract_info(url, download=True)
         except Exception as e:
-            logger.error(f"İndirme hatası: {e}")
-            raise RuntimeError(f"İndirme başarısız oldu: {e}")
+            logger.error(f"Ham indirme hatası: {e}")
+            raise RuntimeError(f"Video indirilemedi: {e}")
 
-    # İndirilen dosyayı bulalım
-    matches = glob.glob(os.path.join(DOWNLOAD_DIR, f"{timestamp}_*"))
-    if not matches:
-        raise RuntimeError("İndirilen dosya sistemde bulunamadı.")
+    # İndirilen ham dosyayı bul
+    raw_matches = glob.glob(os.path.join(DOWNLOAD_DIR, f"raw_{timestamp}_*"))
+    if not raw_matches:
+        raise RuntimeError("İndirilen ham video dosyası bulunamadı.")
 
-    downloaded_file = matches[0]
-    filename = os.path.basename(downloaded_file)
-    clean_display_name = re.sub(r"^\d+_", "", filename)
+    raw_file = raw_matches[0]
+    
+    # Temiz başlık oluştur
+    raw_title = info.get("title") or "video"
+    clean_title = re.sub(r'[\\/*?:"<>|]', "", raw_title).strip()[:50] or "video"
+
+    ext = ".mp3" if target_device == "audio" else ".mp4"
+    final_filename = f"{timestamp}_{clean_title}{ext}"
+    final_path = os.path.join(DOWNLOAD_DIR, final_filename)
+
+    # 2. AŞAMA: Hedef cihaza göre FFmpeg dönüştürme
+    try:
+        convert_to_target_format(raw_file, final_path, target_device)
+    finally:
+        # Ham geçici dosyayı hemen temizle
+        if os.path.exists(raw_file):
+            try:
+                os.remove(raw_file)
+            except Exception:
+                pass
+
+    if not os.path.exists(final_path):
+        raise RuntimeError("Format dönüştürme sonucunda dosya üretilemedi.")
 
     return {
-        "file_path": downloaded_file,
-        "filename": filename,
-        "display_name": clean_display_name,
-        "size_bytes": os.path.getsize(downloaded_file),
+        "file_path": final_path,
+        "filename": final_filename,
+        "display_name": f"{clean_title}{ext}",
+        "size_bytes": os.path.getsize(final_path),
     }
