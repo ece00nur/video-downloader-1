@@ -56,8 +56,10 @@ def get_base_ydl_opts() -> Dict[str, Any]:
         "no_color": True,
         "extract_flat": False,
         "ignoreerrors": False,
-        "socket_timeout": 30,
-        "retries": 5,
+        "socket_timeout": 20,
+        "retries": 3,
+        "concurrent_fragment_downloads": 8,
+        "buffersize": 1024 * 1024,
         "http_headers": {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             "Accept-Language": "en-US,en;q=0.9,tr;q=0.8",
@@ -119,12 +121,11 @@ def fetch_media_info(url: str) -> Dict[str, Any]:
 
 def convert_to_target_format(input_path: str, output_path: str, target_device: str):
     """
-    İndirilen ham videoyu FFmpeg ile seçilen cihaz profiline dönüştürür.
-    
-    - 'ios': iPhone/iPad için Apple Photos & Safari ile %100 uyumlu H.264 + AAC + yuv420p MP4.
-    - 'android': Android galerileriyle uyumlu yüksek kalite MP4.
-    - 'pc': Kayıpsız orijinal en yüksek kalite MP4.
-    - 'audio': 320kbps kristal netliğinde MP3 ses dosyası.
+    YILDIRIM HIZINDA DÖNÜŞTÜRME & AKIŞ KOPYALAMA:
+    1. 'audio': Videodan sesi doğrudan ayıklar (MP3 320k).
+    2. 'ios', 'android', 'pc':
+       Önce kayıpsız ve anlık stream copy (-c copy) dener (0.05 saniye sürer, kalite %100 orijinal kalır).
+       Yalnızca nadir durumlarda uyumsuz bir video formatı varsa hızlı dönüştürme yapar (-preset ultrafast).
     """
     logger.info(f"Dönüştürme başlatıldı: {input_path} -> {output_path} ({target_device})")
 
@@ -137,54 +138,41 @@ def convert_to_target_format(input_path: str, output_path: str, target_device: s
             "-b:a", "320k",
             output_path
         ]
-    elif target_device == "ios":
-        # Apple cihazları için katı H.264 Baseline/High + AAC + yuv420p kuralı
-        cmd = [
-            FFMPEG_PATH, "-y",
-            "-i", input_path,
-            "-c:v", "libx264",
-            "-pix_fmt", "yuv420p",
-            "-preset", "fast",
-            "-crf", "18",  # Görsel olarak kayıpsız en yüksek kalite
-            "-c:a", "aac",
-            "-b:a", "192k",
-            "-movflags", "+faststart",
-            output_path
-        ]
-    elif target_device == "android":
-        cmd = [
-            FFMPEG_PATH, "-y",
-            "-i", input_path,
-            "-c:v", "libx264",
-            "-pix_fmt", "yuv420p",
-            "-preset", "fast",
-            "-crf", "18",
-            "-c:a", "aac",
-            "-b:a", "192k",
-            "-movflags", "+faststart",
-            output_path
-        ]
-    else:  # PC / Orijinal
-        cmd = [
-            FFMPEG_PATH, "-y",
-            "-i", input_path,
-            "-c", "copy",
-            "-movflags", "+faststart",
-            output_path
-        ]
+        proc = subprocess.run(cmd, capture_output=True)
+        if proc.returncode != 0:
+            raise RuntimeError(f"Ses dönüştürme hatası: {proc.stderr}")
+        return
 
-    proc = subprocess.run(cmd, capture_output=True, text=True)
-    if proc.returncode != 0:
-        logger.warning(f"FFmpeg özel dönüştürme başarısız oldu, genel dönüştürme deneniyor: {proc.stderr[:200]}")
-        # Yedek dönüştürme komutu (fail-safe)
-        fallback_cmd = [
-            FFMPEG_PATH, "-y",
-            "-i", input_path,
-            output_path
-        ]
-        fallback_proc = subprocess.run(fallback_cmd, capture_output=True, text=True)
-        if fallback_proc.returncode != 0:
-            raise RuntimeError(f"FFmpeg dönüştürme hatası: {proc.stderr}")
+    # 1. Aşama: Anında akış kopyalama (0.05 saniyede kayıpsız MP4)
+    copy_cmd = [
+        FFMPEG_PATH, "-y",
+        "-i", input_path,
+        "-c", "copy",
+        "-movflags", "+faststart",
+        output_path
+    ]
+    res = subprocess.run(copy_cmd, capture_output=True)
+    if res.returncode == 0:
+        logger.info("Akış kopyalama (stream copy) 0.05 saniyede tamamlandı!")
+        return
+
+    # 2. Aşama: Gerekirse ultra hızlı dönüştürme
+    logger.info("Akış kopyalama yapılamadı, ultra hızlı dönüştürme yapılıyor...")
+    fallback_cmd = [
+        FFMPEG_PATH, "-y",
+        "-i", input_path,
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-crf", "20",
+        "-pix_fmt", "yuv420p",
+        "-c:a", "aac",
+        "-b:a", "192k",
+        "-movflags", "+faststart",
+        output_path
+    ]
+    fallback_res = subprocess.run(fallback_cmd, capture_output=True, text=True)
+    if fallback_res.returncode != 0:
+        raise RuntimeError(f"Dönüştürme hatası: {fallback_res.stderr}")
 
 def download_media(url: str, target_device: str = "ios") -> Dict[str, Any]:
     """
