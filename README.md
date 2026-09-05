@@ -1,4 +1,4 @@
-# 🌸 MelDownloader - Nisa Hanım'a Özel Video İndirici
+# 🌸 MelDownloader 
 
 Instagram, Pinterest, YouTube, TikTok ve Twitter gibi platformlardaki videoları hiçbir reklam veya bekleme süresi olmadan, **en yüksek ve orijinal kalitede** indiren, toz pembe temalı modern PWA web uygulaması.
 
@@ -14,7 +14,7 @@ Instagram, Pinterest, YouTube, TikTok ve Twitter gibi platformlardaki videoları
   - 🤖 **Android**: Yüksek kaliteli Android MP4.
   - 💻 **PC / Orijinal**: Maksimum çözünürlükte kayıpsız birleştirme.
   - 🎵 **Sadece Müzik (MP3)**: 320kbps kristal netliğinde ses ayıklama.
-- 💖 **Özel İmza**: Sayfanın altında parıltılı *"🌸 Nisa Hanım'a Özel Olarak Sevgiyle Hazırlanmıştır ✨"* rozeti.
+- 
 
 ---
 
@@ -26,30 +26,28 @@ Bilgisayarınızda çalıştırmak için:
 
 ---
 
-## ☁️ 2. Nisa Hanım'ın Telefonu İçin İnternete Yükleme (GitHub + Render - 3 Dakika, Ücretsiz)
 
-Nisa Hanım'ın bilgisayarı olmadığı için bu uygulamayı internette canlıya alıp ona özel bir link verebilirsiniz:
 
 ### Adım 1: Kodları GitHub'a Yükleyin
 Klasörde bir terminal / komut satırı açarak şu komutları sırayla çalıştırın:
 ```bash
 git init
 git add .
-git commit -m "Nisa Hanima Ozel Video Indirici"
+git commit -m "video indirme uygulaması"
 git branch -M main
 ```
-GitHub'da (`github.com`) yeni bir repository açın (Örn: `nisa-indirici`) ve oradaki yönlendirmeye göre bağlayıp gönderin:
+GitHub'da (`github.com`) yeni bir repository açın (Örn: `video downloader`) ve oradaki yönlendirmeye göre bağlayıp gönderin:
 ```bash
-git remote add origin https://github.com/KULLANICI_ADINIZ/nisa-indirici.git
+git remote add origin https://github.com/KULLANICI_ADINIZ/video-downloader.git
 git push -u origin main
 ```
 
 ### Adım 2: Render.com'da 1 Tıkla Yayına Alın
 1. [Render.com](https://render.com) adresine gidin ve **"Sign in with GitHub"** diyerek ücretsiz kaydolun.
 2. Dashboard'da sağ üstten **"New +" ➔ "Web Service"** seçeneğine tıklayın.
-3. GitHub deponuzu (`nisa-indirici`) listeden seçin ve **"Connect"** deyin.
+3. GitHub deponuzu (`video-downloader`) listeden seçin ve **"Connect"** deyin.
 4. Ayarlar otomatik algılanır:
-   - **Name**: `nisa-indirici` (veya istediğiniz bir isim)
+   - **Name**: `video downloader` (veya istediğiniz bir isim)
    - **Region**: Frankfurt (Avrupa - Türkiye'ye en hızlısı)
    - **Branch**: `main`
    - **Runtime**: `Python 3`
@@ -58,13 +56,10 @@ git push -u origin main
    - **Instance Type**: **Free**
 5. En alttaki **"Create Web Service"** butonuna basın.
 
-Yaklaşık 1-2 dakika içinde size `https://nisa-indirici.onrender.com` gibi harika bir canlı link verecektir!
+Yaklaşık 1-2 dakika içinde size `https://video-downloader.onrender.com` gibi harika bir canlı link verecektir!
 
 ---
 
-## 📱 3. Nisa Hanım Telefona Nasıl Kuracak?
-
-Ona verdiğiniz linke tıkladığında:
 
 ### 🍏 iPhone İçin:
 1. Linki **Safari** tarayıcısında açsın.
