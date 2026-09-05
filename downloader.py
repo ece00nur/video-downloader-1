@@ -47,9 +47,27 @@ def detect_platform(url: str) -> str:
         return "twitter"
     return "auto"
 
+def get_cookie_file() -> Optional[str]:
+    """Çerez dosyasını (cookies.txt) veya YOUTUBE_COOKIES çevre değişkenini döner."""
+    cookies_env = os.environ.get("YOUTUBE_COOKIES")
+    cookie_path = os.path.join(BASE_DIR, "cookies.txt")
+    
+    if cookies_env and cookies_env.strip():
+        try:
+            with open(cookie_path, "w", encoding="utf-8") as f:
+                f.write(cookies_env.strip())
+            return cookie_path
+        except Exception as e:
+            logger.warning(f"YOUTUBE_COOKIES yazılırken hata: {e}")
+            
+    if os.path.exists(cookie_path) and os.path.getsize(cookie_path) > 0:
+        return cookie_path
+        
+    return None
+
 def get_base_ydl_opts() -> Dict[str, Any]:
-    """Temel yt-dlp seçenekleri - format kısıtlaması olmadan."""
-    return {
+    """Temel yt-dlp seçenekleri - format kısıtlaması olmadan ve çerez desteğiyle."""
+    opts = {
         "ffmpeg_location": FFMPEG_PATH,
         "quiet": True,
         "no_warnings": True,
@@ -64,7 +82,19 @@ def get_base_ydl_opts() -> Dict[str, Any]:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             "Accept-Language": "en-US,en;q=0.9,tr;q=0.8",
         },
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "ios", "mweb"]
+            }
+        },
     }
+    
+    cookie_file = get_cookie_file()
+    if cookie_file:
+        opts["cookiefile"] = cookie_file
+        logger.info(f"YouTube cookies aktif: {cookie_file}")
+        
+    return opts
 
 def fetch_media_info(url: str) -> Dict[str, Any]:
     """Video önizleme ve meta verilerini çeker."""
@@ -77,7 +107,9 @@ def fetch_media_info(url: str) -> Dict[str, Any]:
         except Exception as e:
             err_msg = str(e)
             logger.error(f"Bilgi çekme hatası: {err_msg}")
-            if "Private video" in err_msg or "login" in err_msg.lower():
+            if "Sign in to confirm" in err_msg or "bot" in err_msg.lower():
+                raise RuntimeError("YouTube bu videoyu sunucu üzerinden indirmeye karşı korumaya aldı (Bot doğrulaması). Render ayarlarından YOUTUBE_COOKIES eklenmelidir.")
+            elif "Private video" in err_msg or "login" in err_msg.lower():
                 raise RuntimeError("Bu içerik gizli veya kısıtlı bir hesapta olduğu için erişilemiyor.")
             elif "Video unavailable" in err_msg:
                 raise RuntimeError("Video yayından kaldırılmış veya bağlantı geçersiz.")
