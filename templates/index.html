@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MelDownloader 🌸 Nisa Hanım'a Özel Video İndirici</title>
+  
+  <!-- PWA & Mobil Meta Etiketleri -->
+  <meta name="theme-color" content="#fbb1bd">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Nisa İndir">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <link rel="icon" type="image/png" href="/static/icon-192.png">
+
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Arka plan süslemeleri -->
+  <div class="bg-shape shape-1"></div>
+  <div class="bg-shape shape-2"></div>
+  <div class="bg-shape shape-3"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-badge">
+        <span class="sparkle">✨</span> Reklamsız & Orijinal Kalite <span class="sparkle">✨</span>
+      </div>
+      <h1 class="app-title">
+        <span class="title-highlight">Mel</span>Downloader
+        <span class="flower-icon">🌸</span>
+      </h1>
+      <p class="app-subtitle">Instagram, Pinterest, YouTube ve tüm platformlardan tek tıkla en yüksek kalitede indirin.</p>
+    </header>
+
+    <!-- Platform Seçici -->
+    <section class="platform-section">
+      <label class="section-label">İçerik Nereden İndirilecek?</label>
+      <div class="platform-grid" id="platformSelector">
+        <button class="platform-btn active" data-platform="auto">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Otomatik</span>
+        </button>
+        <button class="platform-btn" data-platform="instagram">
+          <i class="fa-brands fa-instagram"></i>
+          <span>Instagram</span>
+        </button>
+        <button class="platform-btn" data-platform="pinterest">
+          <i class="fa-brands fa-pinterest"></i>
+          <span>Pinterest</span>
+        </button>
+        <button class="platform-btn" data-platform="youtube">
+          <i class="fa-brands fa-youtube"></i>
+          <span>YouTube</span>
+        </button>
+        <button class="platform-btn" data-platform="tiktok">
+          <i class="fa-brands fa-tiktok"></i>
+          <span>TikTok</span>
+        </button>
+        <button class="platform-btn" data-platform="twitter">
+          <i class="fa-brands fa-x-twitter"></i>
+          <span>Twitter/X</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Cihaz & Format Seçici -->
+    <section class="device-section">
+      <label class="section-label">Hangi Cihaza İndiriyorsunuz?</label>
+      <div class="device-grid" id="deviceSelector">
+        <label class="device-card active">
+          <input type="radio" name="device" value="ios" checked>
+          <div class="device-content">
+            <i class="fa-brands fa-apple"></i>
+            <div class="device-info">
+              <strong>iPhone / iPad</strong>
+              <small>Apple Galeri Uyumlu MP4</small>
+            </div>
+          </div>
+        </label>
+        
+        <label class="device-card">
+          <input type="radio" name="device" value="android">
+          <div class="device-content">
+            <i class="fa-brands fa-android"></i>
+            <div class="device-info">
+              <strong>Android</strong>
+              <small>Yüksek Kalite MP4</small>
+            </div>
+          </div>
+        </label>
+
+        <label class="device-card">
+          <input type="radio" name="device" value="pc">
+          <div class="device-content">
+            <i class="fa-solid fa-laptop"></i>
+            <div class="device-info">
+              <strong>PC / Orijinal</strong>
+              <small>Maksimum 4K/1080p</small>
+            </div>
+          </div>
+        </label>
+
+        <label class="device-card">
+          <input type="radio" name="device" value="audio">
+          <div class="device-content">
+            <i class="fa-solid fa-music"></i>
+            <div class="device-info">
+              <strong>Sadece Müzik</strong>
+              <small>320kbps MP3 Ses</small>
+            </div>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <!-- İndirme Giriş Alanı -->
+    <section class="input-card">
+      <div class="input-wrapper">
+        <i class="fa-solid fa-link input-icon"></i>
+        <input 
+          type="url" 
+          id="urlInput" 
+          placeholder="Video bağlantısını buraya yapıştırın..." 
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <button class="paste-btn" id="pasteBtn" title="Panodan Yapıştır">
+          <i class="fa-regular fa-paste"></i>
+          <span>Yapıştır</span>
+        </button>
+      </div>
+
+      <button class="action-btn" id="analyzeBtn">
+        <span class="btn-text">
+          <i class="fa-solid fa-sparkles"></i> Videoyu Getir
+        </span>
+        <div class="btn-loader hidden">
+          <div class="spinner"></div>
+          <span>Hazırlanıyor...</span>
+        </div>
+      </button>
+    </section>
+
+    <!-- Hata / Bildirim Kutusu -->
+    <div id="alertBox" class="alert-box hidden">
+      <i class="fa-solid fa-circle-exclamation alert-icon"></i>
+      <span id="alertMsg">Bir hata oluştu</span>
+    </div>
+
+    <!-- Video Önizleme & İndirme Kartı -->
+    <section id="previewCard" class="preview-card hidden">
+      <div class="preview-thumb-container">
+        <img id="previewThumb" src="" alt="Video Kapak Resmi">
+        <span id="previewDuration" class="preview-badge duration-badge">0:00</span>
+        <span id="previewPlatform" class="preview-badge platform-badge">Platform</span>
+      </div>
+      
+      <div class="preview-details">
+        <h3 id="previewTitle" class="video-title">Video Başlığı</h3>
+        <div class="preview-meta">
+          <span><i class="fa-solid fa-user"></i> <span id="previewAuthor">-</span></span>
+          <span><i class="fa-solid fa-film"></i> <span id="previewQuality">Orijinal Kalite</span></span>
+        </div>
+
+        <button class="download-submit-btn" id="startDownloadBtn">
+          <span class="btn-text">
+            <i class="fa-solid fa-arrow-down-to-bracket"></i> Cihazıma Kaydet
+          </span>
+          <div class="btn-loader hidden">
+            <div class="spinner-white"></div>
+            <span id="downloadStatusText">İndiriliyor & Birleştiriliyor...</span>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- Telefona Kurma Rehberi (Açılır Kutu) -->
+    <div class="install-guide-card">
+      <button class="install-toggle-btn" id="installToggleBtn">
+        <span><i class="fa-solid fa-mobile-screen-button"></i> Bu Uygulamayı Telefona Nasıl Yüklerim?</span>
+        <i class="fa-solid fa-chevron-down toggle-arrow"></i>
+      </button>
+      
+      <div class="install-content hidden" id="installContent">
+        <div class="guide-step">
+          <div class="step-num">🍏</div>
+          <div class="step-text">
+            <strong>iPhone / iPad İçin:</strong>
+            <p>Bu sayfayı <b>Safari</b>'de açın ➔ Alttaki <b>Paylaş</b> butonuna (<i class="fa-solid fa-arrow-up-from-bracket"></i>) basın ➔ <b>"Ana Ekrana Ekle"</b>yi seçin. Artık telefonunuzda kendi simgesi olan bir uygulama olacak!</p>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-num">🤖</div>
+          <div class="step-text">
+            <strong>Android İçin:</strong>
+            <p>Bu sayfayı <b>Chrome</b>'da açın ➔ Sağ üstteki <b>üç noktaya</b> (⋮) basın ➔ <b>"Uygulamayı Yükle"</b> veya <b>"Ana Ekrana Ekle"</b>ye dokunun.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nisa Hanım'a Özel Zarif İmza Rozeti -->
+    <footer class="app-footer">
+      <div class="nisa-badge">
+        <span class="badge-flower">🌸</span>
+        <span class="badge-text">Nisa Hanım'a Özel Olarak Sevgiyle Hazırlanmıştır</span>
+        <span class="badge-sparkle">✨</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

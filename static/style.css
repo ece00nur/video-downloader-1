@@ -1,0 +1,583 @@
+:root {
+  --bg-primary: #fff7f9;
+  --bg-secondary: #fef0f4;
+  --pink-light: #fde8ee;
+  --pink-soft: #fbc7d6;
+  --pink-main: #f48fb1;
+  --pink-vibrant: #ec407a;
+  --pink-accent: #d81b60;
+  --pink-dark: #4a2835;
+  --text-muted: #8c6a77;
+  --white: #ffffff;
+  --card-bg: rgba(255, 255, 255, 0.88);
+  --card-border: rgba(251, 199, 214, 0.55);
+  --shadow-soft: 0 10px 30px -5px rgba(236, 64, 122, 0.12);
+  --shadow-glow: 0 0 25px rgba(244, 143, 177, 0.35);
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-primary);
+  color: var(--pink-dark);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 16px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Arka Plan Toz Pembe Küreleri */
+.bg-shape {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: -1;
+  opacity: 0.65;
+  pointer-events: none;
+}
+.shape-1 {
+  width: 320px;
+  height: 320px;
+  background: #fcc2d0;
+  top: -80px;
+  left: -80px;
+}
+.shape-2 {
+  width: 400px;
+  height: 400px;
+  background: #ffe3ec;
+  bottom: -100px;
+  right: -80px;
+}
+.shape-3 {
+  width: 250px;
+  height: 250px;
+  background: #f8bbd0;
+  top: 40%;
+  right: 15%;
+}
+
+/* Ana Konteyner */
+.app-container {
+  width: 100%;
+  max-width: 580px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Header */
+.app-header {
+  text-align: center;
+  padding: 10px 0;
+}
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(244, 143, 177, 0.18);
+  border: 1px solid var(--pink-soft);
+  color: var(--pink-vibrant);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 50px;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+.app-title {
+  font-size: 2.3rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--pink-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.title-highlight {
+  background: linear-gradient(135deg, #ec407a 0%, #ab47bc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.flower-icon {
+  font-size: 1.8rem;
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(8deg); }
+}
+.app-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-top: 8px;
+  line-height: 1.45;
+}
+
+/* Bölüm Başlıkları */
+.section-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--pink-dark);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* Platform Seçici Izgara */
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.platform-btn {
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--pink-dark);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(244, 143, 177, 0.08);
+}
+.platform-btn i {
+  font-size: 1.05rem;
+  color: var(--pink-vibrant);
+  transition: transform 0.2s;
+}
+.platform-btn:hover {
+  background: var(--white);
+  border-color: var(--pink-main);
+  transform: translateY(-2px);
+}
+.platform-btn.active {
+  background: linear-gradient(135deg, #f48fb1 0%, #ec407a 100%);
+  border-color: transparent;
+  color: var(--white);
+  box-shadow: var(--shadow-glow);
+}
+.platform-btn.active i {
+  color: var(--white);
+}
+
+/* Cihaz & Format Seçici */
+.device-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.device-card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  box-shadow: 0 3px 10px rgba(244, 143, 177, 0.08);
+}
+.device-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+.device-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+.device-content i {
+  font-size: 1.5rem;
+  color: var(--pink-vibrant);
+  width: 28px;
+  text-align: center;
+}
+.device-info {
+  display: flex;
+  flex-direction: column;
+}
+.device-info strong {
+  font-size: 0.9rem;
+  color: var(--pink-dark);
+}
+.device-info small {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.device-card.active {
+  border-color: var(--pink-vibrant);
+  background: #fff0f4;
+  box-shadow: 0 4px 14px rgba(236, 64, 122, 0.18);
+}
+.device-card.active .device-info strong {
+  color: var(--pink-accent);
+}
+
+/* Link Giriş Kartı */
+.input-card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border: 1.5px solid var(--pink-soft);
+  border-radius: var(--radius-md);
+  padding: 6px 8px 6px 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-wrapper:focus-within {
+  border-color: var(--pink-vibrant);
+  box-shadow: 0 0 0 4px rgba(244, 143, 177, 0.22);
+}
+.input-icon {
+  color: var(--pink-vibrant);
+  font-size: 1.1rem;
+  margin-right: 10px;
+}
+.input-wrapper input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--pink-dark);
+  background: transparent;
+  min-width: 0;
+}
+.input-wrapper input::placeholder {
+  color: #bfa0ac;
+}
+.paste-btn {
+  background: var(--pink-light);
+  border: 1px solid var(--pink-soft);
+  color: var(--pink-vibrant);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.paste-btn:hover {
+  background: var(--pink-soft);
+  color: var(--pink-accent);
+}
+
+/* Aksiyon Butonu */
+.action-btn, .download-submit-btn {
+  background: linear-gradient(135deg, #f48fb1 0%, #ec407a 100%);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 15px;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 8px 20px -3px rgba(236, 64, 122, 0.35);
+  transition: all 0.25s ease;
+  width: 100%;
+}
+.action-btn:hover, .download-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -2px rgba(236, 64, 122, 0.45);
+}
+.action-btn:active, .download-submit-btn:active {
+  transform: translateY(1px);
+}
+.action-btn:disabled, .download-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Spinner */
+.spinner, .spinner-white {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.btn-loader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hata / Uyarı Bildirimi */
+.alert-box {
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+  color: #c62828;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: shake 0.4s ease;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Önizleme Kartı */
+.preview-card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  animation: slideUp 0.35s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.preview-thumb-container {
+  position: relative;
+  width: 100%;
+  max-height: 260px;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+.preview-thumb-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.preview-badge {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 6px;
+}
+.duration-badge {
+  bottom: 12px;
+  right: 12px;
+}
+.platform-badge {
+  top: 12px;
+  left: 12px;
+  background: rgba(236, 64, 122, 0.9);
+  text-transform: capitalize;
+}
+.preview-details {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.video-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--pink-dark);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.preview-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.preview-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.preview-meta i {
+  color: var(--pink-vibrant);
+}
+
+/* Telefona Kurma Rehberi */
+.install-guide-card {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px dashed var(--pink-soft);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.install-toggle-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--pink-dark);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.install-toggle-btn:hover {
+  background: rgba(254, 240, 244, 0.6);
+}
+.install-toggle-btn i:first-child {
+  color: var(--pink-vibrant);
+  margin-right: 6px;
+}
+.toggle-arrow {
+  transition: transform 0.3s;
+}
+.toggle-arrow.open {
+  transform: rotate(180deg);
+}
+.install-content {
+  padding: 4px 16px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.guide-step {
+  display: flex;
+  gap: 12px;
+  background: var(--white);
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--pink-light);
+}
+.step-num {
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+}
+.step-text strong {
+  font-size: 0.85rem;
+  color: var(--pink-accent);
+}
+.step-text p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+/* Nisa Hanım'a Özel Zarif Rozet */
+.app-footer {
+  margin-top: 10px;
+  text-align: center;
+  padding-bottom: 20px;
+}
+.nisa-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(254, 240, 244, 0.9) 100%);
+  border: 1.5px solid rgba(244, 143, 177, 0.45);
+  box-shadow: 0 6px 18px rgba(236, 64, 122, 0.15);
+  padding: 10px 18px;
+  border-radius: 50px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.nisa-badge:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 24px rgba(236, 64, 122, 0.25);
+  border-color: var(--pink-vibrant);
+}
+.badge-flower {
+  font-size: 1.2rem;
+  animation: pulse 2s infinite ease-in-out;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+.badge-text {
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  background: linear-gradient(135deg, #d81b60 0%, #8e24aa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.badge-sparkle {
+  font-size: 1rem;
+}
+
+/* Yardımcı Sınıflar */
+.hidden {
+  display: none !important;
+}
+
+/* Mobil İyileştirmeler */
+@media (max-width: 480px) {
+  body {
+    padding: 16px 12px;
+  }
+  .app-title {
+    font-size: 1.9rem;
+  }
+  .device-grid {
+    grid-template-columns: 1fr;
+  }
+  .platform-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
